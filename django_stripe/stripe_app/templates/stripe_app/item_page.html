@@ -1,0 +1,114 @@
+﻿{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ item.name }}</title>
+</head>
+<body>
+    <h1>{{ item.name }}</h1>
+    <p>Description: {{ item.description }}</p>
+    <p>Price: ${{ item.get_display_price }}</p>
+    <button id="buy-button">Buy Now</button>
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script>
+        var buyButton = document.getElementById('buy-button');
+        buyButton.addEventListener('click', function() {
+            fetch('/buy/{{ item.id }}')
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    var stripe = Stripe("{{ STRIPE_PUBLIC_KEY }}");
+                    stripe.redirectToCheckout({
+                        sessionId: data.session_id
+                    });
+                });
+        });
+    </script>
+</body>
+</html> {% endcomment %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Покупка товара</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        form {
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px 0;
+        }
+
+        #card-element {
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        #card-errors {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>{{ item.name }}</h1>
+    <p>{{ item.description }}</p>
+    <p>Цена: {{ item.get_display_price }}</p>
+    <form action="{% url 'buy-item' item_id=item.id %}" method="post" id="payment-form">
+        {% csrf_token %}
+        <label for="card-element">Введите данные вашей карты:</label>
+        <div id="card-element">
+        </div>
+        <div id="card-errors" role="alert"></div>
+        <button type="submit" id="submit-button">Купить</button>
+    </form>
+
+    <script>
+        var stripe = Stripe('your_publishable_stripe_key');
+        var elements = stripe.elements();
+        var cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        var paymentForm = document.getElementById('payment-form');
+        paymentForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            stripe.confirmCardPayment('{{ client_secret }}', {
+                payment_method: {
+                    card: cardElement
+                }
+            }).then(function(result) {
+                if (result.error) {
+                    console.log(result.error.message);
+                } else {
+                    window.location.href = '/success/';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

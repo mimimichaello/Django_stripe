@@ -1,0 +1,12 @@
+﻿version: '3'
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - STRIPE_PUBLIC_KEY=pk_test_51OQ4nEFm8aN3LMpfypOgVDqajtNDQJP9ZwbD75c4WJDzeibuN5K4JcHWVorSh3g4AGDBtrqqYTACEq4iVPS7P0Go00I5KLfz7x
+      - STRIPE_SECRET_KEY=sk_test_51OQ4nEFm8aN3LMpfssHZ9PEgOxA6DOPZxkjgEuRZouQQEpIogzAtM2TyERFeecOSMaHnCw1OmZwVPD4PRHInFMkh001URX7pxd
